@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import Button from "./components/Button";
 
 function App() {
-  const workMin: number = 25;
+  const bellSound = new Audio("bell.mp3");
+  const workMin: number = 1;
   const breakMin: number = 1;
 
   const [min, setMin] = useState<number>(workMin);
@@ -35,6 +36,10 @@ function App() {
   };
 
   useEffect(() => {
+    bellSound.play();
+  }, [isBreak]);
+
+  useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isActive) {
@@ -44,7 +49,6 @@ function App() {
           setSec(59);
         } else {
           setSec(sec - 1);
-          // console.log(sec - 1);
         }
         digitCheck();
         clearInterval(interval);
@@ -87,8 +91,11 @@ function App() {
 
   return (
     <div className="">
+      <header>
+        <h1 className="text-center text-3xl mt-4">pomodoro timer</h1>
+      </header>
       <div
-        className={`bg-gray-100 px-5 m-5 shadow-lg rounded-3xl ${
+        className={`px-5 m-5 shadow-lg rounded-3xl ${
           isBreak ? "bg-blue-100" : "bg-red-100"
         }`}
       >
