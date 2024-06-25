@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import Button from "./components/Button";
 
 function App() {
-  const bellSound = new Audio("bell.mp3");
-  const workMin: number = 1;
-  const breakMin: number = 1;
+  const bellSound: HTMLAudioElement = new Audio("bell.mp3");
+  const workMin: number = 2;
+  const breakMin: number = 2;
 
   const [min, setMin] = useState<number>(workMin);
   const [sec, setSec] = useState<number>(0);
@@ -37,6 +37,7 @@ function App() {
 
   useEffect(() => {
     bellSound.play();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBreak]);
 
   useEffect(() => {
@@ -87,6 +88,7 @@ function App() {
         setCount(count + 1);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, isBreak, min, sec, count]);
 
   return (
