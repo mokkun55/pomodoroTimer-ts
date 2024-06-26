@@ -3,20 +3,21 @@ import Button from "./components/Button";
 
 function App() {
   const bellSound: HTMLAudioElement = new Audio("bell.mp3");
-  const workMin: number = 2;
-  const breakMin: number = 2;
+  const workMin: number = 1;
+  const breakMin: number = 5;
 
   const [min, setMin] = useState<number>(workMin);
   const [sec, setSec] = useState<number>(0);
-
   const [strSec, setStrSec] = useState<string>("00");
-
   const [isActive, setIsActive] = useState<boolean>(false);
   const [isBreak, setIsBreak] = useState<boolean>(false);
 
   const [count, setCount] = useState<number>(0);
 
-  // ローカルストレージに保存したcountを呼び出し countに代入
+  // ローカルストレージ読み込み
+  const loadLocalstrage = () => {
+    setCount(Number(localStorage.getItem("counts")));
+  };
 
   const timerStart = () => {
     setIsActive(true);
@@ -27,14 +28,24 @@ function App() {
     setIsActive(false);
   };
 
-  const digitCheck = () => {
-    if (sec > 9) {
-      setStrSec(String(sec));
-    } else {
-      setStrSec("0" + String(sec));
-    }
+  const timerReset = () => {
+    setIsActive(false);
+    setIsBreak(false);
+    setMin(workMin);
+    setSec(0);
+    setStrSec("00");
   };
 
+  const digitCheck = () => {
+    sec > 9 ? setStrSec(String(sec)) : setStrSec("0" + String(sec));
+  };
+
+  useEffect(() => {
+    // ローカルストレージ読み込み
+    loadLocalstrage();
+  }, []);
+
+  // 休憩↔仕事 更新時に音を鳴らす
   useEffect(() => {
     bellSound.play();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,14 +57,13 @@ function App() {
     if (isActive) {
       interval = setInterval(() => {
         if (sec == 0) {
-          setMin(min - 1);
           setSec(59);
+          setMin(min - 1);
         } else {
           setSec(sec - 1);
         }
         digitCheck();
-        clearInterval(interval);
-      }, 100);
+      }, 1000);
 
       // 時間が0になったときの処理
       if (min == 0 && sec == 1) {
@@ -72,11 +82,10 @@ function App() {
           setSec(59);
         } else {
           setSec(sec - 1);
-          // console.log(sec - 1);
         }
         digitCheck();
         clearInterval(interval);
-      }, 100);
+      }, 1000);
 
       // 時間が0になったときの処理
       if (min == 0 && sec == 1) {
@@ -86,6 +95,7 @@ function App() {
         setMin(workMin);
         setSec(0);
         setCount(count + 1);
+        localStorage.setItem("counts", String(count + 1));
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -94,20 +104,23 @@ function App() {
   return (
     <div className="">
       <header>
-        <h1 className="text-center text-3xl mt-4">pomodoro timer</h1>
+        <h1 className="text-center text-4xl mt-4">Pomodoro Timer</h1>
       </header>
-      <div
-        className={`px-5 m-5 shadow-lg rounded-3xl ${
-          isBreak ? "bg-blue-100" : "bg-red-100"
-        }`}
-      >
-        <p className="text-xl text-center pt-5">
-          {isBreak ? "Break Time" : "Work Time"}
-        </p>
-        <p className="text-[120px] text-center leading-none pb-5">
-          {min}:{strSec}
-        </p>
+      <div className="flex justify-center">
+        <div
+          className={`w-[500px] m-5 shadow-lg rounded-3xl ${
+            isBreak ? "bg-blue-100" : "bg-red-100"
+          }`}
+        >
+          <p className="text-xl text-center pt-5">
+            {isBreak ? ` Time ${breakMin}min` : `Work Time ${workMin}min`}
+          </p>
+          <p className="text-[120px] text-center leading-none pb-5">
+            {min}:{strSec}
+          </p>
+        </div>
       </div>
+
       <div className="text-center">
         <Button className="bg-blue-400" onClick={timerStart}>
           スタート
@@ -115,12 +128,16 @@ function App() {
         <Button className="bg-green-400" onClick={timerStop}>
           一時停止
         </Button>
-        <Button className="bg-red-400">終了</Button>
+        <Button className="bg-red-400" onClick={timerReset}>
+          終了
+        </Button>
       </div>
 
       <div>
         <h1 className="text-2xl text-center mt-5">
-          あなたは、今まで{count}セット取り組みました!
+          今まで
+          <span className="underline">{count}セット</span>
+          取り組みました!
         </h1>
         <div className="flex justify-center">
           <p>回数はブラウザに保存されます。</p>
@@ -128,11 +145,21 @@ function App() {
             className="text-red-500 underline cursor-pointer"
             onClick={() => {
               if (confirm("本当にリセットしますか?")) {
-                // TODO ローカルストレージ初期化する
+                localStorage.setItem("counts", "0");
+                setCount(0);
               }
             }}
           >
             リセット
+          </p>
+        </div>
+      </div>
+
+      <div className="flex justify-center">
+        <div className="w-[700px] bg-gray-100 p-5 m-5 rounded-3xl shadow-lg mt-16">
+          <h1 className="text-xl">ポモドーロテクニックとは...</h1>
+          <p className="m-2 mt-0">
+            ポモドーロテクニックは、フランチェスコ・シリロ氏が1980年代に考案した時間管理の手法です。ポモドーロテクニックは、短い作業と休憩のサイクルを繰り返すことで、持続的な集中力を保ち、疲労を防ぎます。時間の区切りがあることで、タスクの見通しが立ちやすくなり、達成感も得られやすくなります。
           </p>
         </div>
       </div>
