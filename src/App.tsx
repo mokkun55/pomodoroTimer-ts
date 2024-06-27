@@ -3,12 +3,12 @@ import Button from "./components/Button";
 
 function App() {
   const bellSound: HTMLAudioElement = new Audio("bell.mp3");
-  const workMin: number = 1;
+  const workMin: number = 25;
   const breakMin: number = 5;
 
-  const [min, setMin] = useState<number>(workMin);
-  const [sec, setSec] = useState<number>(0);
-  const [strSec, setStrSec] = useState<string>("00");
+  const [time, setTime] = useState<[number, number]>([workMin, 0]);
+  const [strTime, setStrTime] = useState<[string, string]>(["", ""]);
+
   const [isActive, setIsActive] = useState<boolean>(false);
   const [isBreak, setIsBreak] = useState<boolean>(false);
 
@@ -16,7 +16,7 @@ function App() {
 
   // ローカルストレージ読み込み
   const loadLocalstrage = () => {
-    setCount(Number(localStorage.getItem("counts")));
+    setCount(Number(localStorage.getItem("count")));
   };
 
   const timerStart = () => {
@@ -31,13 +31,13 @@ function App() {
   const timerReset = () => {
     setIsActive(false);
     setIsBreak(false);
-    setMin(workMin);
-    setSec(0);
-    setStrSec("00");
+    setTime([workMin, 0]);
   };
 
   const digitCheck = () => {
-    sec > 9 ? setStrSec(String(sec)) : setStrSec("0" + String(sec));
+    time[1] < 10
+      ? setStrTime([String(time[0]), "0" + String(time[1])])
+      : setStrTime([String(time[0]), String(time[1])]);
   };
 
   useEffect(() => {
@@ -53,53 +53,33 @@ function App() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-
+    digitCheck();
     if (isActive) {
       interval = setInterval(() => {
-        if (sec == 0) {
-          setSec(59);
-          setMin(min - 1);
+        if (time[1] === 0) {
+          setTime([time[0] - 1, 59]);
         } else {
-          setSec(sec - 1);
+          setTime([time[0], time[1] - 1]);
         }
-        digitCheck();
+        if (time[0] === 0 && time[1] === 0) {
+          setIsBreak(!isBreak);
+          setTime([breakMin, 0]);
+          if (isBreak) {
+            setCount(count + 1);
+            localStorage.setItem("count", String(count + 1));
+          }
+        }
       }, 1000);
-
-      // 時間が0になったときの処理
-      if (min == 0 && sec == 1) {
-        setIsActive(!isActive);
-        setIsBreak(!isBreak);
-        // タイマーをに設定休憩時間
-        setMin(breakMin);
-        setSec(0);
-      }
     }
 
-    if (isBreak) {
-      interval = setInterval(() => {
-        if (sec == 0) {
-          setMin(min - 1);
-          setSec(59);
-        } else {
-          setSec(sec - 1);
-        }
-        digitCheck();
-        clearInterval(interval);
-      }, 1000);
-
-      // 時間が0になったときの処理
-      if (min == 0 && sec == 1) {
-        setIsActive(!isActive);
-        setIsBreak(!isBreak);
-        // タイマーをワーク時間に設定
-        setMin(workMin);
-        setSec(0);
-        setCount(count + 1);
-        localStorage.setItem("counts", String(count + 1));
-      }
-    }
+    // タイマー重複防ぐ
+    return () => {
+      clearInterval(interval);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive, isBreak, min, sec, count]);
+  }, [time, isBreak, isActive]);
+
+  useEffect(() => {}, []);
 
   return (
     <div className="">
@@ -116,7 +96,7 @@ function App() {
             {isBreak ? ` Time ${breakMin}min` : `Work Time ${workMin}min`}
           </p>
           <p className="text-[120px] text-center leading-none pb-5">
-            {min}:{strSec}
+            {strTime[0]}:{strTime[1]}
           </p>
         </div>
       </div>
@@ -145,7 +125,7 @@ function App() {
             className="text-red-500 underline cursor-pointer"
             onClick={() => {
               if (confirm("本当にリセットしますか?")) {
-                localStorage.setItem("counts", "0");
+                localStorage.setItem("count", "0");
                 setCount(0);
               }
             }}
