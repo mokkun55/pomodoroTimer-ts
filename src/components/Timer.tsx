@@ -46,6 +46,7 @@ function Timer({
           setIsBreak(!isBreak);
           setTime([breakMin, 0]);
           if (isBreak) {
+            setTime([workMin, 0]);
             setCount(count + 1);
             localStorage.setItem("count", String(count + 1));
           }
