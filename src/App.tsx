@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Button from "./components/Button";
 import Timer from "./components/Timer";
+import Footer from "./components/Footer";
 
 function App() {
   const workMin: number = 25;
@@ -97,6 +98,7 @@ function App() {
           </p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
