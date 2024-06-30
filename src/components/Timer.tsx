@@ -7,10 +7,10 @@ type TimerProps = {
   isActive: boolean;
   isBreak: boolean;
   count: number;
-  time: [number, number];
-  setTime: (time: [number, number]) => void;
+  isReset: boolean;
   setIsBreak: (isBreak: boolean) => void;
   setCount: (count: number) => void;
+  setReset: (isReset: boolean) => void;
 };
 
 function Timer({
@@ -19,12 +19,13 @@ function Timer({
   isActive,
   isBreak,
   count,
-  time,
-  setTime,
+  isReset,
   setIsBreak,
   setCount,
+  setReset,
 }: TimerProps) {
   const bellSound: HTMLAudioElement = new Audio("bell.mp3");
+  const [time, setTime] = useState<[number, number]>([workMin, 0]);
   const [strTime, setStrTime] = useState<[string, string]>(["", ""]);
   const digitCheck = () => {
     time[1] < 10
@@ -66,6 +67,12 @@ function Timer({
     bellSound.play();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBreak]);
+
+  useEffect(() => {
+    setReset(false);
+    setTime([workMin, 0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReset]);
 
   return (
     <div className="flex justify-center">

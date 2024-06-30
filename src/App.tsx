@@ -7,10 +7,9 @@ function App() {
   const workMin: number = 25;
   const breakMin: number = 5;
 
-  const [time, setTime] = useState<[number, number]>([workMin, 0]);
-
   const [isActive, setIsActive] = useState<boolean>(false);
   const [isBreak, setIsBreak] = useState<boolean>(false);
+  const [reset, setReset] = useState<boolean>(false);
 
   const [count, setCount] = useState<number>(0);
 
@@ -29,7 +28,9 @@ function App() {
   const timerReset = () => {
     setIsActive(false);
     setIsBreak(false);
-    setTime([workMin, 0]);
+    setReset(true);
+
+    // setTime([workMin, 0]);
   };
 
   // 初回レンダリング時のみ
@@ -49,10 +50,10 @@ function App() {
         isActive={isActive}
         isBreak={isBreak}
         count={count}
-        time={time}
-        setTime={setTime}
+        isReset={reset}
         setIsBreak={setIsBreak}
         setCount={setCount}
+        setReset={setReset}
       />
       <div className="text-center">
         <Button className="bg-blue-400" onClick={timerStart}>
